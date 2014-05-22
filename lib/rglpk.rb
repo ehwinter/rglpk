@@ -5,6 +5,40 @@ module Rglpk
     v = Glpk_wrapper.const_get(c)
     self.const_set(c, v) if v.kind_of? Numeric
   end
+  #
+  # Constants grepped from *.h files:
+  # * GLP_BS - basic variable
+  # * GLP_BS - inactive constraint/basic variable
+  # * GLP_CV - continuous variable
+  # * GLP_DB - double-bounded variable
+  # * GLP_DN_BRNCH - select down-branch
+  # * GLP_FEAS   - solution is feasible
+  # * GLP_FR - free variable
+  # * GLP_FX - fixed variable, sum a[j] * x[j]  = b 
+  # * GLP_INFEAS - solution is infeasible
+  # * GLP_IPT - interior-point solution
+  # * GLP_IV - integer or binary variable 
+  # * GLP_LO - variable with lower bound
+  # * GLP_MAX - maximization 
+  # * GLP_MIN - minimization
+  # * GLP_MIP - mixed integer solution 
+  # * GLP_NF - non-basic free variable/active free row
+  # * GLP_NL - non-basic variable /active constraint on lower bound
+  # * GLP_NOFEAS - no feasible solution exists 
+  # * GLP_NO_BRNCH - use general selection technique 
+  # * GLP_NS - non-basic fixed variable 
+  # * GLP_NU - active constraint on upper bound
+  # * GLP_NU - non-basic variable on upper bound
+  # * GLP_NU - non-basic variable on upper bound
+  # * GLP_OFF - scaling is disabled
+  # * GLP_ON  - scaling is enabled 
+  # * GLP_OPT    - integer solution is optimal
+  # * GLP_OPT - solution is optimal
+  # * GLP_SOL - basic solution
+  # * GLP_UNDEF  - solution is undefined
+  # * GLP_UP - variable with upper bound
+  # * GLP_UP: sum a[j] * x[j] <= b
+  # * GLP_UP_BRNCH - select up-branch
   TypeConstants = [GLP_FR, GLP_LO, GLP_UP, GLP_DB, GLP_FX]
 
   class RowColArray
@@ -299,7 +333,7 @@ module Rglpk
     def get_stat
       Glpk_wrapper.glp_get_row_stat(@p.lp, @i)
     end
-    
+    # retrieve row primal value
     def get_prim
       Glpk_wrapper.glp_get_row_prim(@p.lp, @i)
     end
@@ -408,20 +442,27 @@ module Rglpk
       raise ArgumentError if d != GLP_MIN and d != GLP_MAX
       Glpk_wrapper.glp_set_obj_dir(@p.lp, d)
     end
-    
+    # glp_get_obj_dir returns the optimization direction flag (i.e. “sense” of the objective function):
+    # GLP_MIN minimization;
+    # GLP_MAX maximization.
     def dir
       Glpk_wrapper.glp_get_obj_dir(@p.lp)
     end
     
+    # set (change) objective coefficient or constant term
     def set_coef(j, coef)
       Glpk_wrapper.glp_set_obj_coef(@p.lp, j, coef)
     end
-    
+        # set (change) objective coefficients using a[]
     def coefs=(a)
       @p.cols.each{|c| Glpk_wrapper.glp_set_obj_coef(@p.lp, c.j, a[c.j - 1])}
       a
     end
-    
+    # glp_get_obj_coef(glp_prob *lp, int j);
+    # 
+    # @return objective coefficient at j-th structural variable (column).
+    # If the parameter j is 0, the routine returns the constant term (“shift”)
+    # of the objective function.
     def coefs
       @p.cols.map{|c| Glpk_wrapper.glp_get_obj_coef(@p.lp, c.j)}
     end
